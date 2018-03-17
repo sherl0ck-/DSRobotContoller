@@ -22,9 +22,6 @@ class BasicInteractionsWithFreddie:
 	currTLT = 0
 	currPAN = 0
 
-	currLMS = 100
-	currRMS = 100
-
 	def __init__(self):
 		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		
@@ -84,6 +81,7 @@ class BasicInteractionsWithFreddie:
 	def closeConnectionToFreddie(self):
 		self.s.close()
 
+# Testing the implementations
 freddie = BasicInteractionsWithFreddie()
 freddie.connectToFreddie()
 freddie.setFreddiesLeftMotorSpeed(50)

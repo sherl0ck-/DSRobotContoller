@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 from random import randint
-from math import sqrt
+from math import sqrt, atan2, pi
 
 class LineDetector:
 
@@ -73,23 +73,53 @@ class LineDetector:
 					longestLines[lineLength] = list([x1,y1,x2,y2])
 
 		return list(longestLines.values())
-				
-# For testing
-cap=cv2.VideoCapture('http://192.168.1.1:8080/?action=stream')
-
-while True:
-	ret,frame=cap.read()
-	cv2.imshow("frame", frame)
 	
-	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-	edgedFrame = LineDetector.autoCanny(gray)
-	lines = LineDetector.getLongestLines(edgedFrame, 
-		nLongestLines=1, lineLengthThreshold=int((edgedFrame.shape)[0]/3))
-	if lines is not None:
-		LineDetector.showLines(frame, lines)
+	### Inputs: expects numpy or other array-like structures where 
+	###			subtraction is defined
+	###	Output: angle in degrees to the nearest point on the line
+	def angleFromPointToLineSegment(point, segment0, segment1):
+		v = segment1 - segment0
+		w = point - segment0
 
-	cv2.imshow('Lines', frame)
-	cv2.waitKey(1)
+		vw = np.dot(v, w)
+		vv = np.dot(v, v)
+		if (vw<=0):
+			return np.linalg.norm(point-segment0)
+		if (vv <= vw):
+			return np.linalg.norm(point-segment1)
 
-cap.release()
-cv2.destroyAllWindows()
+		pointOnSegment = segment0 + (vw/vv)*v
+		directionToPoint = pointOnSegment-point
+		return atan2(directionToPoint[1], directionToPoint[0])*180/pi
+
+	### Inputs: expects numpy or other array-like structures where 
+	###			subtraction is defined
+	###	Output: angle in degrees to the farthest endpoint on the segment.
+	###			The angle is relative to line x=point[0], oriented N
+	def angleToFartherEndpointOnSegment(point, segment0, segment1):
+		fartherEndpoint=segment1 if segment1[1] - segment0[1] > 0 else segment0
+
+		angle = pi/2 + atan2(point[1]-fartherEndpoint[1], point[0]-fartherEndpoint[0])
+		return angle*180/pi
+
+# For testing
+# cap=cv2.VideoCapture('http://192.168.1.1:8080/?action=stream')
+
+# while True:
+# 	ret,frame=cap.read()
+	
+# 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+# 	edgedFrame = LineDetector.autoCanny(gray)
+# 	lines = LineDetector.getLongestLines(edgedFrame, 
+# 		nLongestLines=1, lineLengthThreshold=int((edgedFrame.shape)[0]/3))
+# 	if lines is not None:
+# 		LineDetector.showLines(frame, lines)
+
+# 	cv2.imshow('Lines', frame)
+# 	cv2.imshow("frame", edgedFrame)
+
+# 	cv2.waitKey(1)
+
+# cap.release()
+# cv2.destroyAllWindows()
+print(LineDetector.angleToFartherEndpointOnSegment(np.array([1, 0]), np.array([0,0]), np.array([2,1])))

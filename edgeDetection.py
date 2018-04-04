@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from random import randint
 from math import sqrt, atan2, pi
-from sys.stdout import flush
+from sys import stdout
 
 class LineDetector:
 
@@ -116,15 +116,16 @@ def main():
 			nLongestLines=1, lineLengthThreshold=int((edgedFrame.shape)[0]/3))
 		if lines is not None:
 			print(LineDetector.angleToFartherEndpointOnSegment \
-				(np.array([edgedFrame.shape[0]-1,edgedFrame.shape[1]/2]), np.array(lines[:2]), np.array(lines[2:])))
-			flush()
+				(np.array([edgedFrame.shape[0]-1,edgedFrame.shape[1]/2]), \
+					np.array(lines)[0, :2], np.array(lines)[0, 2:]))
+			stdout.flush()
 
 			#LineDetector.showLines(frame, lines)
 
 		#cv2.imshow('Lines', frame)
 		#cv2.imshow("frame", edgedFrame)
 
-		cv2.waitKey(1)
+		#cv2.waitKey(1)
 
 	cap.release()
 	cv2.destroyAllWindows()

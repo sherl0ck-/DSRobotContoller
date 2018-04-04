@@ -100,10 +100,15 @@ class Car {
 int main(int argc, char **argv) {
     Car Freddie = Car(argv);
     fprintf(stderr, "Connected to Freddie.\nReady to receive command.....\n");
-    char dir;
-    while(std::cin >> dir) {
-        std::cout << dir << std::endl;
-        Freddie.move(dir - '0');
+    int degree;
+    while(std::cin >> degree) {
+        std::cout << degree << std::endl;
+        if (degree > 50) {
+            Freddie.move(MOV_RIGHT);
+        } else if (degree < -50) {
+            Freddie.move(MOV_LEFT);
+        }
+        Freddie.move(MOV_FWD);
     }
     return 0;
 }

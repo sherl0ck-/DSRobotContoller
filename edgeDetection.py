@@ -115,7 +115,8 @@ def main():
 		lines = LineDetector.getLongestLines(edgedFrame, 
 			nLongestLines=1, lineLengthThreshold=int((edgedFrame.shape)[0]/3))
 		if lines is not None:
-			print(LineDetector.angleToFartherEndpointOnSegment())
+			print(LineDetector.angleToFartherEndpointOnSegment \
+				(np.array([edgedFrame.shape[1]/2, 0]), np.array(lines[:2]), np.array(lines[2:])))
 			flush()
 
 			#LineDetector.showLines(frame, lines)

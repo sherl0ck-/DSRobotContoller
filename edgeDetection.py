@@ -4,9 +4,16 @@ from matplotlib import pyplot as plt
 from random import randint
 from math import sqrt, atan2, pi
 from sys import stdout
+from basicInteractions import BasicInteractionsWithFreddie
 
 class LineDetector:
 
+	def __init__():
+		freddie = BasicInteractionsWithFreddie()
+		freddie.connectToFreddie()
+		freddie.tiltFreddiesCameraAbs(40)
+		freddie.panFreddiesCameraAbs(90)
+		freddie.closeConnectionToFreddie()
 	### Canny detector, invariant to a change in overall image brightness.
 	### Requires no pixel boundary params specifications
 	def autoCanny(image, sigma=0.33):
@@ -40,7 +47,7 @@ class LineDetector:
 		THETA_ACCURACY = np.pi/180
 		
 		# can be increased to detect more lines
-		MAX_LINE_GAP = 10
+		MAX_LINE_GAP = 20
 		
 		longestLines = {}
 		for i in range(nLongestLines):
@@ -114,7 +121,7 @@ def main():
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 		edgedFrame = LineDetector.autoCanny(gray)
 		lines = LineDetector.getLongestLines(edgedFrame, 
-			nLongestLines=1, lineLengthThreshold=int((edgedFrame.shape)[0]/3))
+			nLongestLines=1, lineLengthThreshold=int((edgedFrame.shape)[0]/10))
 		if lines is not None:
 			lastOutput = LineDetector.angleToFartherEndpointOnSegment \
 				(np.array([edgedFrame.shape[1]/2, 0]), \

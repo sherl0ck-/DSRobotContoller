@@ -3,6 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from random import randint
 from math import sqrt, atan2, pi
+from sys.stdout import flush
 
 class LineDetector:
 
@@ -102,24 +103,30 @@ class LineDetector:
 		angle = pi/2 + atan2(point[1]-fartherEndpoint[1], point[0]-fartherEndpoint[0])
 		return angle*180/pi
 
-# For testing
-# cap=cv2.VideoCapture('http://192.168.1.1:8080/?action=stream')
+def main():
 
-# while True:
-# 	ret,frame=cap.read()
-	
-# 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-# 	edgedFrame = LineDetector.autoCanny(gray)
-# 	lines = LineDetector.getLongestLines(edgedFrame, 
-# 		nLongestLines=1, lineLengthThreshold=int((edgedFrame.shape)[0]/3))
-# 	if lines is not None:
-# 		LineDetector.showLines(frame, lines)
+	cap=cv2.VideoCapture('http://192.168.1.1:8080/?action=stream')
 
-# 	cv2.imshow('Lines', frame)
-# 	cv2.imshow("frame", edgedFrame)
+	while True:
+		ret,frame=cap.read()
+		
+		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+		edgedFrame = LineDetector.autoCanny(gray)
+		lines = LineDetector.getLongestLines(edgedFrame, 
+			nLongestLines=1, lineLengthThreshold=int((edgedFrame.shape)[0]/3))
+		if lines is not None:
+			print(LineDetector.angleToFartherEndpointOnSegment())
+			flush()
 
-# 	cv2.waitKey(1)
+			#LineDetector.showLines(frame, lines)
 
-# cap.release()
-# cv2.destroyAllWindows()
-print(LineDetector.angleToFartherEndpointOnSegment(np.array([1, 0]), np.array([0,0]), np.array([2,1])))
+		#cv2.imshow('Lines', frame)
+		#cv2.imshow("frame", edgedFrame)
+
+		cv2.waitKey(1)
+
+	cap.release()
+	cv2.destroyAllWindows()
+
+if __name__=="__main__":
+	main()

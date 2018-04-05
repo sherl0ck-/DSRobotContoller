@@ -63,7 +63,7 @@ class Car {
         // connect to the car
         if (connect(socketfd, (struct sockaddr *) &address, sizeof(address)) < 0)
             exit(-1);
-        setSpeed(10);
+        setSpeed(2);
     }
 
     ~Car() { 
@@ -103,9 +103,9 @@ int main(int argc, char **argv) {
     int degree;
     while(std::cin >> degree) {
         std::cout << degree << std::endl;
-        if (degree > 50) {
+        if (degree > 20) {
             Freddie.move(MOV_RIGHT);
-        } else if (degree < -50) {
+        } else if (degree < -20) {
             Freddie.move(MOV_LEFT);
         }
         Freddie.move(MOV_FWD);

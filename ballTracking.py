@@ -14,10 +14,14 @@ pts = deque(maxlen=50)
 
 nFrames = 0 
 camera=cv2.VideoCapture('http://192.168.1.1:8080/?action=stream')
+(grabbed, frame) = camera.read()
+print(int(frame.shape[1]/2))
+stout.flush()
+
 while True:
 	# grab the current frame
 	(grabbed, frame) = camera.read()
-	nFrames=(nFrames+1)%3
+	nFrames=(nFrames+1)%5
 	if (nFrames!=0):
 		continue
 	# if we are viewing a video and we did not grab a frame,
@@ -64,7 +68,14 @@ while True:
 			cv2.circle(frame, (int(x), int(y)), int(radius),
 				(0, 255, 255), 2)
 			cv2.circle(frame, center, 5, (0, 0, 255), -1)
- 
+
+		else:
+			print(int(frame.shape[1]/2))
+			stout.flush()
+ 	
+ 	else:
+ 		print(int(frame.shape[1]/2))
+		stout.flush()
 	# update the points queue
 	pts.appendleft(center)
 	# loop over the set of tracked points
@@ -73,11 +84,6 @@ while True:
 		# them
 		if pts[i - 1] is None or pts[i] is None:
 			continue
- 
-		# otherwise, compute the thickness of the line and
-		# draw the connecting lines
-		#thickness = int(np.sqrt(50 / float(i + 1)) * 2.5)
-		#cv2.line(frame, pts[i - 1], pts[i], (0, 0, 255), thickness)
  
 	# show the frame to our screen
 	cv2.imshow("Frame", frame)

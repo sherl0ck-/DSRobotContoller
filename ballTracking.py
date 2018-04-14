@@ -14,7 +14,8 @@ redUpper = (6, 255, 255)
 nFrames = 0 
 camera=cv2.VideoCapture('http://192.168.1.1:8080/?action=stream')
 (grabbed, frame) = camera.read()
-print(int(frame.shape[1]/2))
+halfFrameWidth = int(frame.shape[1]/2)
+print(int(halfFrameWidth))
 stdout.flush()
 
 while True:
@@ -61,19 +62,23 @@ while True:
             # draw the circle and centroid on the frame,
             # then update the list of tracked points
             
-            print(int(int(x) - frame.shape[1]/2))
-            stdout.flush()
- 
             cv2.circle(frame, (int(x), int(y)), int(radius),
                 (0, 255, 255), 2)
             cv2.circle(frame, center, 5, (0, 0, 255), -1)
 
+            # Ball is below the camera, which means we arrived at the destination
+            if int(y)>400:
+                print(halfFrameWidth)
+
+            print(int(int(x) - halfFrameWidth))
+            stdout.flush()
+
         else:
-            print(int(frame.shape[1]/2))
+            print(halfFrameWidth)
             stdout.flush()
     
     else:
-        print(int(frame.shape[1]/2))
+        print(halfFrameWidth)
         stdout.flush()
     
     # show the frame to our screen

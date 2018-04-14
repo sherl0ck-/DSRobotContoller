@@ -29,6 +29,8 @@
 #define SET_DEGREE 3
 #define PAY_LOAD_N 5
 
+#define CONCESSION 0.1
+
 class Car {
     private:
         int socketfd;
@@ -71,10 +73,10 @@ class Car {
     }
 
     void move(char dir) {
-        int time = 150000;
+        // int time = 150000;
         send(socketfd, command[dir], PAY_LOAD_N, MSG_NOSIGNAL); 
-        usleep(time);
-        stop();
+        // usleep(time);
+        // stop();
     }
 
     void stop() {
@@ -100,15 +102,26 @@ class Car {
 int main(int argc, char **argv) {
     Car Freddie = Car(argv);
     fprintf(stderr, "Connected to Freddie.\nReady to receive command.....\n");
+    int halfFrameWidth; std::cin >> halfFrameWidth;
+    int concession = CONCESSION * halfFrameWidth;
     int degree;
     while(std::cin >> degree) {
-        std::cout << degree << std::endl;
-        if (degree > 20) {
-            Freddie.move(MOV_RIGHT);
-        } else if (degree < -20) {
+        if (degree > halfFrameWidth) {   // can't find anything in the frame
             Freddie.move(MOV_LEFT);
+            usleep(100000);
+            Freddie.stop();
+        } else if (degree + concession > 0 || degree - concession < 0) { //on track
+            Freddie.move(MOV_FWD);
+            continue;
+        } else if (degree < 0) {
+            Freddie.move(MOV_LEFT);
+            usleep(100000);
+            Freddie.stop();
+        } else {
+            Freddie.move(MOV_RIGHT);
+            usleep(100000);
+            Freddie.stop();
         }
-        Freddie.move(MOV_FWD);
     }
     return 0;
 }

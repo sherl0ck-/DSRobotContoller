@@ -10,7 +10,6 @@ from sys import stdout
 # list of tracked points
 redLower = (0, 96, 31)
 redUpper = (6, 255, 255)
-pts = deque(maxlen=50)
 
 nFrames = 0 
 camera=cv2.VideoCapture('http://192.168.1.1:8080/?action=stream')
@@ -31,7 +30,7 @@ while True:
  
     # resize the frame, blur it, and convert it to the HSV
     # color space
-    frame = imutils.resize(frame, width=600)
+    # frame = imutils.resize(frame, width=600)
     # blurred = cv2.GaussianBlur(frame, (11, 11), 0)
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
  
@@ -76,15 +75,7 @@ while True:
     else:
         print(int(frame.shape[1]/2))
         stdout.flush()
-    # update the points queue
-    pts.appendleft(center)
-    # loop over the set of tracked points
-    for i in range(1, len(pts)):
-        # if either of the tracked points are None, ignore
-        # them
-        if pts[i - 1] is None or pts[i] is None:
-            continue
- 
+    
     # show the frame to our screen
     cv2.imshow("Frame", frame)
     key = cv2.waitKey(1) & 0xFF

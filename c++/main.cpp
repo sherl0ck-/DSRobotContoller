@@ -103,9 +103,11 @@ int main(int argc, char **argv) {
     Car Freddie = Car(argv);
     fprintf(stderr, "Connected to Freddie.\nReady to receive command.....\n");
     int halfFrameWidth; std::cin >> halfFrameWidth;
+    fprintf(stderr, "halfFrameWidth: %i", halfFrameWidth);
     int concession = CONCESSION * halfFrameWidth;
     int degree;
     while(std::cin >> degree) {
+        fprintf(stderr, "received degree: %i", degree);
         if (degree > halfFrameWidth) {   // can't find anything in the frame
             Freddie.move(MOV_LEFT);
             usleep(100000);

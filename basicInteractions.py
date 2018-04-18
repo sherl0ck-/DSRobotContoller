@@ -84,6 +84,6 @@ class BasicInteractionsWithFreddie:
 # Testing the implementations
 freddie = BasicInteractionsWithFreddie()
 freddie.connectToFreddie()
-freddie.tiltFreddiesCameraAbs(20)
-freddie.panFreddiesCameraAbs(90)
+freddie.tiltFreddiesCameraAbs(0)
+freddie.panFreddiesCameraAbs(50)
 freddie.closeConnectionToFreddie()

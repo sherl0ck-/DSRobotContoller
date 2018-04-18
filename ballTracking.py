@@ -17,6 +17,7 @@ nFrames = 0
 camera=cv2.VideoCapture('http://192.168.1.1:8080/?action=stream')
 (grabbed, frame) = camera.read()
 halfFrameWidth = int(frame.shape[1]/2)
+halfFrameHeight = int(frame.shape[0]/2)
 
 print(int(halfFrameWidth)) # For protocol purpose
 stdout.flush()
@@ -65,6 +66,8 @@ while True:
             if int(y)>450:
                 print(-halfFrameWidth)
                 break
+            if int(r) > 0.75*halfFrameHeight:
+                print(-halfFrameWidth)
 
             print(int(x) - halfFrameWidth)
             stdout.flush()

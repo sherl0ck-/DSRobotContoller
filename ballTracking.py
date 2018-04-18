@@ -5,6 +5,11 @@ import imutils
 import cv2
 from sys import stdout
 
+# 3 problems:
+#  - Stop when we approach the ball on the ground
+#  - Stop when we approach the ball on the robot
+#  - Note where the ball dissapears (R/L)
+
 # define the lower and upper boundaries of the "green"
 # ball in the HSV color space, then initialize the
 # list of tracked points
@@ -67,10 +72,10 @@ while True:
             cv2.circle(frame, center, 5, (0, 0, 255), -1)
 
             # Ball is below the camera, which means we arrived at the destination
-            if int(y)>400:
-                print(halfFrameWidth)
+            if int(y)>350:
+                print(-halfFrameWidth)
 
-            print(int(int(x) - halfFrameWidth))
+            print(int(x) - halfFrameWidth)
             stdout.flush()
 
         else:

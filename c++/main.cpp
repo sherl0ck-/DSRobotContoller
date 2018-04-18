@@ -29,7 +29,7 @@
 #define SET_DEGREE 3
 #define PAY_LOAD_N 5
 
-#define CONCESSION 0.1
+#define CONCESSION 0.3
 
 class Car {
     private:
@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
         fprintf(stderr, "received degree: %i\n", degree);
         if (degree == halfFrameWidth) {   // can't find anything in the frame
             Freddie.move(MOV_LEFT);
-            usleep(200000);
+            usleep(100000);
             Freddie.stop();
         } else if (degree == -1 * halfFrameWidth) {
             Freddie.stop();
@@ -120,7 +120,7 @@ int main(int argc, char **argv) {
                 Freddie.move(MOV_FWD);
             } else {
                 Freddie.move(MOV_LEFT);
-                usleep(50000);
+                usleep(40000);
                 Freddie.stop();
             }
         } else {
@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
                 Freddie.move(MOV_FWD);
             } else {
                 Freddie.move(MOV_RIGHT);
-                usleep(50000);
+                usleep(40000);
                 Freddie.stop();
             }
         }

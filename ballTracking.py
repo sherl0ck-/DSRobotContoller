@@ -66,10 +66,10 @@ while True:
             if int(y)>450:
                 print(-halfFrameWidth)
                 break
-            if int(r) > 0.75*halfFrameHeight:
+            if int(radius) > 0.75*halfFrameHeight:
                 print(-halfFrameWidth)
-
-            print(int(x) - halfFrameWidth)
+            else:
+                print(int(x) - halfFrameWidth)
             stdout.flush()
 
         else:

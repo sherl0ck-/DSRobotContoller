@@ -105,24 +105,32 @@ int main(int argc, char **argv) {
     int halfFrameWidth; std::cin >> halfFrameWidth;
     fprintf(stderr, "halfFrameWidth: %i\n", halfFrameWidth);
     int concession = CONCESSION * halfFrameWidth;
+    std::cout << concession << std::endl;
     int degree;
     while(std::cin >> degree) {
         fprintf(stderr, "received degree: %i\n", degree);
         if (degree == halfFrameWidth) {   // can't find anything in the frame
             Freddie.move(MOV_LEFT);
-            usleep(100000);
+            usleep(200000);
             Freddie.stop();
-        } else if (degree + concession > 0 || degree - concession < 0) { //on track
-            Freddie.move(MOV_FWD);
-            continue;
+        } else if (degree == -1 * halfFrameWidth) {
+            Freddie.stop();
         } else if (degree < 0) {
-            Freddie.move(MOV_LEFT);
-            usleep(100000);
-            Freddie.stop();
+            if (degree + concession > 0) {
+                Freddie.move(MOV_FWD);
+            } else {
+                Freddie.move(MOV_LEFT);
+                usleep(50000);
+                Freddie.stop();
+            }
         } else {
-            Freddie.move(MOV_RIGHT);
-            usleep(100000);
-            Freddie.stop();
+            if (degree - concession < 0) {
+                Freddie.move(MOV_FWD);
+            } else {
+                Freddie.move(MOV_RIGHT);
+                usleep(50000);
+                Freddie.stop();
+            }
         }
     }
     return 0;

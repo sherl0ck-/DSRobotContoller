@@ -3,7 +3,7 @@ import numpy as np
 import argparse
 import imutils
 import cv2
-from sys import stdout
+from sys import stdout, stderr
 
 # 3 problems:
 #  - Stop when we approach the ball on the ground
@@ -72,9 +72,10 @@ while True:
             cv2.circle(frame, center, 5, (0, 0, 255), -1)
 
             # Ball is below the camera, which means we arrived at the destination
-            if int(y)>380:
-                print(-halfFrameWidth)
-                break
+            #if int(y) > 450:
+            #    stderr.write('gone below horizon')
+            #    print(-halfFrameWidth)
+            #    break
             if int(radius) > IN_FRONT_OF_US:
                 print(-halfFrameWidth)
             else:

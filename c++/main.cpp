@@ -65,7 +65,7 @@ class Car {
         // connect to the car
         if (connect(socketfd, (struct sockaddr *) &address, sizeof(address)) < 0)
             exit(-1);
-        setSpeed(2);
+        setSpeed(40);
     }
 
     ~Car() { 
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
             usleep(100000);
             Freddie.stop();
         } else if (degree == -1 * halfFrameWidth) {
-            if (inmotion) usleep(1000000);
+            // if (inmotion) usleep(800000);
             Freddie.stop();
             inmotion = false;
         } else if ((degree < 0 && degree + concession > 0) || 

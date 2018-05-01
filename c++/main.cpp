@@ -109,33 +109,39 @@ int main(int argc, char **argv) {
     fprintf(stderr, "halfFrameWidth: %i\n", halfFrameWidth);
     int concession = CONCESSION * halfFrameWidth;
     std::cout << concession << " " << halfFrameWidth + concession << " " << halfFrameWidth -concession<< std::endl;
-    int degree;
-    bool inmotion = false;
+    int lastDegree = halfFrameWidth, degree = halfFrameWidth;
+    bool moving_fwd = false, moving_left = false, moving_right = false;
     while(std::cin >> degree) {
         fprintf(stderr, "received degree: %i\n", degree);
         if (degree == halfFrameWidth) {   // can't find anything in the frame
             Freddie.setSpeed(SEARCH_SPEED);
-            Freddie.move(MOV_LEFT);
+            moving_left ? Freddie.move(MOV_LEFT) : Freddie.move(MOV_RIGHT);
         } else if (degree == -1 * halfFrameWidth) {
-            // if (inmotion) usleep(800000);
+            // if (moving_fwd) usleep(800000);
             Freddie.stop();
-            inmotion = false;
+            moving_fwd = moving_left = moving_right = false;
         } else if ((degree < 0 && degree + concession > 0) || 
                 (degree > 0 && degree - concession < 0)) {
-            if (!inmotion) inmotion = true;
-            Freddie.setSpeed(CRUISE_SPEED);
+            moving_fwd = true;
+            if (degree < 0) moving_left = true, moving_right = false;
+            else moving_right = true, moving_left = false;
             Freddie.move(MOV_FWD); 
+            Freddie.setSpeed(CRUISE_SPEED);
+            moving_fwd = true, moving_left = moving_right = false;
         } else {
             if (degree < 0) {
+                moving_left = true, moving_fwd = moving_right = false;
                 Freddie.setRightSpeed(CRUISE_SPEED - 0.5 * (degree * (FULL_SPEED-CRUISE_SPEED)) / halfFrameWidth);
                 Freddie.setRightSpeed(CRUISE_SPEED);
                 Freddie.move(MOV_FWD);
             } else {
+                moving_right = true, moving_fwd = moving_left = false;
                 Freddie.setLeftSpeed(CRUISE_SPEED + (degree * (FULL_SPEED-CRUISE_SPEED)) / halfFrameWidth);
                 Freddie.setRightSpeed(CRUISE_SPEED);
                 Freddie.move(MOV_FWD);
             }
         }
+        lastDegree = degree;
     }
     Freddie.stop();
     return 0;

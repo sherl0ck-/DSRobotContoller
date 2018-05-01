@@ -79,10 +79,10 @@ yellowLower = (25, 73, 104)
 yellowUpper = (62, 255, 255)
 
 yellowHouseLowerLab = (0, 98, 149)
-yellowHouseUpperLab = (255, 117, 178)
+yellowHouseUpperLab = (255, 126, 178)
+yellowHouse = [yellowHouseLowerLab, yellowHouseUpperLab]
 
-yellowTennisLowerLab = (0, 107, 150)
-yellowTennisUpperLab = (255, 118, 170)
+yellowTennis = [(0, 107, 150), (255, 126, 170)]
 
 yellowBalloon = [(0, 104, 156), (255, 117, 185)]
 redBalloon = [(0, 160, 137), (255, 186, 174)]
@@ -107,7 +107,7 @@ stdout.flush()
 while True:
     # grab the current frame
     (grabbed, frame) = camera.read()
-    nFrames=(nFrames+1)%5
+    nFrames = (nFrames+1) % 2
     if (nFrames!=0):
         continue
 
@@ -117,7 +117,7 @@ while True:
     #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
 
-    getBallDirection(lab, yellowBalloon)
+    getBallDirection(lab, yellowHouse)
     # show the frame to our screen
     cv2.imshow("Frame", frame)
     key = cv2.waitKey(1) & 0xFF

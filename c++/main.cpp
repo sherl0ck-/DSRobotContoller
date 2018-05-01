@@ -30,7 +30,8 @@
 #define SET_DEGREE 3
 #define PAY_LOAD_N 5
 
-#define SEARCH_SPEED 10
+#define FULL_SPEED 100
+#define SEARCH_SPEED 0
 #define CRUISE_SPEED 40
 #define INC_SPEED 10
 
@@ -70,7 +71,7 @@ class Car {
         // connect to the car
         if (connect(socketfd, (struct sockaddr *) &address, sizeof(address)) < 0)
             exit(-1);
-        setSpeed(CRUISE_SPEED);
+        setSpeed(SEARCH_SPEED);
     }
 
     ~Car() { 
@@ -121,18 +122,16 @@ int main(int argc, char **argv) {
             inmotion = false;
         } else if ((degree < 0 && degree + concession > 0) || 
                 (degree > 0 && degree - concession < 0)) {
-            if (inmotion == false) {
-                inmotion = true;
-                Freddie.setSpeed(CRUISE_SPEED);
-            }
-            Freddie.move(MOV_FWD);
+            if (!inmotion) inmotion = true;
+            Freddie.setSpeed(CRUISE_SPEED);
+            Freddie.move(MOV_FWD); 
         } else {
             if (degree < 0) {
-                Freddie.setRightSpeed(CRUISE_SPEED + 3 * INC_SPEED);
+                Freddie.setRightSpeed(CRUISE_SPEED - 0.5 * (degree * (FULL_SPEED-CRUISE_SPEED)) / halfFrameWidth);
                 Freddie.setRightSpeed(CRUISE_SPEED);
                 Freddie.move(MOV_FWD);
             } else {
-                Freddie.setLeftSpeed(CRUISE_SPEED + 3 * INC_SPEED);
+                Freddie.setLeftSpeed(CRUISE_SPEED + (degree * (FULL_SPEED-CRUISE_SPEED)) / halfFrameWidth);
                 Freddie.setRightSpeed(CRUISE_SPEED);
                 Freddie.move(MOV_FWD);
             }

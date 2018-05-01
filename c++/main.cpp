@@ -26,8 +26,13 @@
 #define CAM_TILT   6
 #define SPD_LEFT   7
 #define SPD_RIGHT  8
+
 #define SET_DEGREE 3
 #define PAY_LOAD_N 5
+
+#define SEARCH_SPEED 10
+#define CRUISE_SPEED 40
+#define INC_SPEED 10
 
 #define CONCESSION 0.3
 
@@ -65,7 +70,7 @@ class Car {
         // connect to the car
         if (connect(socketfd, (struct sockaddr *) &address, sizeof(address)) < 0)
             exit(-1);
-        setSpeed(40);
+        setSpeed(CRUISE_SPEED);
     }
 
     ~Car() { 
@@ -73,10 +78,7 @@ class Car {
     }
 
     void move(char dir) {
-        // int time = 150000;
         send(socketfd, command[dir], PAY_LOAD_N, MSG_NOSIGNAL); 
-        // usleep(time);
-        // stop();
     }
 
     void stop() {
@@ -111,26 +113,31 @@ int main(int argc, char **argv) {
     while(std::cin >> degree) {
         fprintf(stderr, "received degree: %i\n", degree);
         if (degree == halfFrameWidth) {   // can't find anything in the frame
+            Freddie.setSpeed(SEARCH_SPEED);
             Freddie.move(MOV_LEFT);
-            usleep(100000);
-            Freddie.stop();
         } else if (degree == -1 * halfFrameWidth) {
             // if (inmotion) usleep(800000);
             Freddie.stop();
             inmotion = false;
         } else if ((degree < 0 && degree + concession > 0) || 
                 (degree > 0 && degree - concession < 0)) {
-            inmotion = true;
+            if (inmotion == false) {
+                inmotion = true;
+                Freddie.setSpeed(CRUISE_SPEED);
+            }
             Freddie.move(MOV_FWD);
         } else {
             if (degree < 0) {
-                Freddie.move(MOV_LEFT);
+                Freddie.setRightSpeed(CRUISE_SPEED + 3 * INC_SPEED);
+                Freddie.setRightSpeed(CRUISE_SPEED);
+                Freddie.move(MOV_FWD);
             } else {
-                Freddie.move(MOV_RIGHT);
+                Freddie.setLeftSpeed(CRUISE_SPEED + 3 * INC_SPEED);
+                Freddie.setRightSpeed(CRUISE_SPEED);
+                Freddie.move(MOV_FWD);
             }
-            usleep(100000);
-            Freddie.stop();
         }
     }
+    Freddie.stop();
     return 0;
 }

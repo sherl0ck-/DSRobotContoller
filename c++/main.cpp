@@ -131,8 +131,8 @@ int main(int argc, char **argv) {
         } else {
             if (degree < 0) {
                 moving_left = true, moving_fwd = moving_right = false;
-                Freddie.setRightSpeed(CRUISE_SPEED - 0.5 * (degree * (FULL_SPEED-CRUISE_SPEED)) / halfFrameWidth);
-                Freddie.setRightSpeed(CRUISE_SPEED);
+                Freddie.setRightSpeed(CRUISE_SPEED - (degree * (FULL_SPEED-CRUISE_SPEED)) / halfFrameWidth);
+                Freddie.setLeftSpeed(CRUISE_SPEED);
                 Freddie.move(MOV_FWD);
             } else {
                 moving_right = true, moving_fwd = moving_left = false;

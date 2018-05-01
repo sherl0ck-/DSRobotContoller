@@ -5,48 +5,25 @@ import imutils
 import cv2
 from sys import stdout, stderr
 
+problems = ['atob', 'leader', 'trajectory']
+def isStopConditionMet(relevantParam, problem):
+    if problem in problems:
+        if problem == 'atob' or problem=='trajectory':
+            return relevantParam > 450
+        elif problem == 'leader':
+            return relevantParam > IN_FRONT_OF_US
+
 # 3 problems:
 #  - Stop when we approach the ball on the ground
 #  - Stop when we approach the ball on the robot
 #  - Note where the ball dissapears (R/L)
 
-redLower = (0, 96, 31)
-redUpper = (6, 255, 255)
-
-blueLower = (104, 54, 0)
-blueUpper = (143, 183, 255)
-
-yellowLower = (25, 73, 104)
-yellowUpper = (62, 255, 255)
-
-nFrames = 0
-camera=cv2.VideoCapture('http://192.168.1.1:8080/?action=stream')
-(grabbed, frame) = camera.read()
-halfFrameWidth = int(frame.shape[1]/2)
-halfFrameHeight = int(frame.shape[0]/2)
-MIN_BALL_RADIUS = 10
-UNDER_OUR_NOSE=450
-IN_FRONT_OF_US=0.75*halfFrameHeight
-
-print(int(halfFrameWidth)) # For protocol purpose
-stdout.flush()
-
-while True:
-    # grab the current frame
-    (grabbed, frame) = camera.read()
-    nFrames=(nFrames+1)%5
-    if (nFrames!=0):
-        continue
-
-    if not grabbed:
-        break
-
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
+def getBallDirection(lab, colorRange):
+    colorLower, colorUpper = colorRange
     # construct a mask for the color, then perform
     # a series of dilations and erosions to remove any small
     # blobs left in the mask
-    mask = cv2.inRange(hsv, yellowLower, yellowUpper)
+    mask = cv2.inRange(lab, colorLower, colorUpper)
     mask = cv2.erode(mask, None, iterations=2)
     mask = cv2.dilate(mask, None, iterations=2)
 
@@ -71,15 +48,17 @@ while True:
                 (0, 255, 255), 2)
             cv2.circle(frame, center, 5, (0, 0, 255), -1)
 
-            # Ball is below the camera, which means we arrived at the destination
-            #if int(y) > 450:
-            #    stderr.write('gone below horizon')
-            #    print(-halfFrameWidth)
-            #    break
-            if int(radius) > IN_FRONT_OF_US:
-                print(-halfFrameWidth)
+            if problem == 'leader':
+                relevantParam = int(radius)
+            elif problem == 'atob' or problem=='trajectory':
+                relevantParam = int(y)
+
             else:
-                print(int(x) - halfFrameWidth)
+                relevantParam = None
+
+            print(-halfFrameWidth) if isStopConditionMet(relevantParam, problem) \
+                else print(int(x)-halfFrameWidth)        
+            
             stdout.flush()
 
         else:
@@ -90,6 +69,55 @@ while True:
         print(halfFrameWidth)
         stdout.flush()
 
+redLower = (0, 96, 31)
+redUpper = (6, 255, 255)
+
+blueLower = (90, 90, 0)
+blueUpper = (143, 183, 255)
+
+yellowLower = (25, 73, 104)
+yellowUpper = (62, 255, 255)
+
+yellowHouseLowerLab = (0, 98, 149)
+yellowHouseUpperLab = (255, 117, 178)
+
+yellowTennisLowerLab = (0, 107, 150)
+yellowTennisUpperLab = (255, 118, 170)
+
+yellowBalloon = [(0, 104, 156), (255, 117, 185)]
+redBalloon = [(0, 160, 137), (255, 186, 174)]
+orangeBalloon = [(0, 147, 145), (255, 171, 184)]
+blueBalloon = [(0, 91, 68), (255, 170, 118)]
+pinkBalloon = [(0, 165, 126), (255, 184, 146)]
+
+colorsToFollow = [yellowBalloon, redBalloon, orangeBalloon, blueBalloon, pinkBalloon]
+
+nFrames = 0
+camera=cv2.VideoCapture('http://192.168.1.1:8080/?action=stream')
+(grabbed, frame) = camera.read()
+halfFrameWidth = int(frame.shape[1]/2)
+halfFrameHeight = int(frame.shape[0]/2)
+MIN_BALL_RADIUS = 10
+IN_FRONT_OF_US=0.75*halfFrameHeight
+problem = 'trajectory'
+
+print(int(halfFrameWidth)) # For protocol purpose
+stdout.flush()
+
+while True:
+    # grab the current frame
+    (grabbed, frame) = camera.read()
+    nFrames=(nFrames+1)%5
+    if (nFrames!=0):
+        continue
+
+    if not grabbed:
+        break
+
+    #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+
+    getBallDirection(lab, yellowBalloon)
     # show the frame to our screen
     cv2.imshow("Frame", frame)
     key = cv2.waitKey(1) & 0xFF
@@ -97,7 +125,6 @@ while True:
     # if the 'q' key is pressed, stop the loop
     if key == ord("q"):
         break
-
 # cleanup the camera and close any open windows
 camera.release()
 cv2.destroyAllWindows()

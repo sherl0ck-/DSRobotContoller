@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
     int lastDegree = halfFrameWidth, degree = halfFrameWidth, radius = halfFrameWidth;
     bool moving_fwd = false, moving_left = false, moving_right = false;
     while(std::cin >> degree >> radius) {
-        fprintf(stderr, "received degree: %i\n", degree);
+        fprintf(stderr, "received degree: %i %i\n", degree, radius);
         if (degree == halfFrameWidth) {   // can't find anything in the frame
             Freddie.setSpeed(SEARCH_SPEED);
             moving_left ? Freddie.move(MOV_LEFT) : Freddie.move(MOV_RIGHT);
@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
             moving_fwd = moving_left = moving_right = false;
         } else if ((degree < 0 && degree + concession > 0) || 
                 (degree > 0 && degree - concession < 0)) {
-            Freddie.setSpeed(CRUISE_SPEED);
+            (radius > 80) ? Freddie.setSpeed(0) : Freddie.setSpeed(CRUISE_SPEED);
             moving_fwd = true;
             if (degree < 0) moving_left = true, moving_right = false;
             else moving_right = true, moving_left = false;

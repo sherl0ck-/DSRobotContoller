@@ -56,17 +56,18 @@ def getBallDirection(lab, colorRange):
             else:
                 relevantParam = None
 
-            print(-halfFrameWidth) if isStopConditionMet(relevantParam, problem) \
-                else print(int(x)-halfFrameWidth)
+            radius = int(radius)
+            print(-halfFrameWidth, radius) if isStopConditionMet(relevantParam, problem) \
+                else print(int(x)-halfFrameWidth, radius)
 
             stdout.flush()
 
         else:
-            print(halfFrameWidth)
+            print(halfFrameWidth, 0)
             stdout.flush()
 
     else:
-        print(halfFrameWidth)
+        print(halfFrameWidth, 0)
         stdout.flush()
 
 redLower = (0, 96, 31)
@@ -124,7 +125,7 @@ while True:
 
     # if the 'q' key is pressed, stop the loop
     if key == ord("q"):
-        print(-halfFrameWidth)
+        print(-halfFrameWidth, 0)
         stdout.flush()
         break
 # cleanup the camera and close any open windows

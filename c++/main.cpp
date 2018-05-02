@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <cmath>
+#include <fcntl.h>
 
 // first and last byte of payload
 #define START_COND '\xFF'
@@ -105,6 +106,7 @@ class Car {
 
 int main(int argc, char **argv) {
     Car Freddie = Car(argv);
+    char FIFO[] = "../mypipe";
     fprintf(stderr, "Connected to Freddie.\nReady to receive command.....\n");
     int halfFrameWidth; std::cin >> halfFrameWidth;
     fprintf(stderr, "halfFrameWidth: %i\n", halfFrameWidth);
@@ -112,17 +114,24 @@ int main(int argc, char **argv) {
     std::cout << concession << " " << halfFrameWidth + concession << " " << halfFrameWidth -concession<< std::endl;
     int lastDegree = halfFrameWidth, degree = halfFrameWidth, radius = halfFrameWidth;
     bool moving_fwd = false, moving_left = false, moving_right = false;
+    bool seen = false;
     while(std::cin >> degree >> radius) {
         fprintf(stderr, "received degree: %i %i\n", degree, radius);
         if (degree == halfFrameWidth) {   // can't find anything in the frame
             Freddie.setSpeed(SEARCH_SPEED);
             moving_left ? Freddie.move(MOV_LEFT) : Freddie.move(MOV_RIGHT);
         } else if (degree == -1 * halfFrameWidth) {
-            // if (moving_fwd) usleep(800000);
+            if (seen == true) {
+                seen = false;
+                int fd = open(FIFO, O_WRONLY);
+                write(fd, "1", 1);
+                close(fd);
+            }
             Freddie.stop();
             moving_fwd = moving_left = moving_right = false;
         } else if ((degree < 0 && degree + concession > 0) || 
                 (degree > 0 && degree - concession < 0)) {
+            seen = true;
             (radius > 100) ? Freddie.setSpeed(10) : Freddie.setSpeed(CRUISE_SPEED);
             if (radius > 250) { Freddie.stop(); continue; };
             moving_fwd = true;
@@ -130,6 +139,7 @@ int main(int argc, char **argv) {
             else moving_right = true, moving_left = false;
             Freddie.move(MOV_FWD); 
         } else {
+            seen = true;
             int cs, inc;
             cs = (radius < 100) ? CRUISE_SPEED : 10;
             inc = (abs(degree) * (FULL_SPEED-cs)) / halfFrameWidth; 

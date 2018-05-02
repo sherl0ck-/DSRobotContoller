@@ -9,7 +9,7 @@ problems = ['atob', 'leader', 'trajectory']
 def isStopConditionMet(relevantParam, problem):
     if problem in problems:
         if problem == 'atob' or problem=='trajectory':
-            return relevantParam > 400
+            return relevantParam > 380
         elif problem == 'leader':
             return relevantParam > IN_FRONT_OF_US
 

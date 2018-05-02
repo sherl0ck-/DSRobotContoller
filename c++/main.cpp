@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <cmath>
 
 // first and last byte of payload
 #define START_COND '\xFF'
@@ -122,20 +123,24 @@ int main(int argc, char **argv) {
             moving_fwd = moving_left = moving_right = false;
         } else if ((degree < 0 && degree + concession > 0) || 
                 (degree > 0 && degree - concession < 0)) {
-            (radius > 80) ? Freddie.setSpeed(0) : Freddie.setSpeed(CRUISE_SPEED);
+            (radius > 100) ? Freddie.setSpeed(10) : Freddie.setSpeed(CRUISE_SPEED);
+            if (radius > 250) { Freddie.stop(); continue; };
             moving_fwd = true;
             if (degree < 0) moving_left = true, moving_right = false;
             else moving_right = true, moving_left = false;
             Freddie.move(MOV_FWD); 
         } else {
+            int cs, inc;
+            cs = (radius < 100) ? CRUISE_SPEED : 10;
+            inc = (abs(degree) * (FULL_SPEED-cs)) / halfFrameWidth; 
             if (degree < 0) {
-                Freddie.setRightSpeed(CRUISE_SPEED - (degree * (FULL_SPEED-CRUISE_SPEED)) / halfFrameWidth);
-                Freddie.setLeftSpeed(CRUISE_SPEED);
+                Freddie.setRightSpeed(cs + inc);
+                Freddie.setLeftSpeed(cs);
                 Freddie.move(MOV_FWD);
                 moving_left = true, moving_fwd = moving_right = false;
             } else {
-                Freddie.setLeftSpeed(CRUISE_SPEED + (degree * (FULL_SPEED-CRUISE_SPEED)) / halfFrameWidth);
-                Freddie.setRightSpeed(CRUISE_SPEED);
+                Freddie.setRightSpeed(cs);
+                Freddie.setLeftSpeed(cs + inc);
                 Freddie.move(MOV_FWD);
                 moving_right = true, moving_fwd = moving_left = false;
             }

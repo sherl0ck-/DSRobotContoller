@@ -4,19 +4,9 @@ import argparse
 import imutils
 import cv2
 from sys import stdout, stderr
+import os
 
 problems = ['atob', 'leader', 'trajectory']
-def isStopConditionMet(relevantParam, problem):
-    if problem in problems:
-        if problem == 'atob' or problem=='trajectory':
-            return relevantParam > 400
-        elif problem == 'leader':
-            return relevantParam > IN_FRONT_OF_US
-
-# 3 problems:
-#  - Stop when we approach the ball on the ground
-#  - Stop when we approach the ball on the robot
-#  - Note where the ball dissapears (R/L)
 
 def getBallDirection(lab, colorRange):
     colorLower, colorUpper = colorRange
@@ -92,6 +82,8 @@ blueBalloon = [(0, 91, 68), (255, 170, 118)]
 pinkBalloon = [(0, 165, 126), (255, 184, 146)]
 
 colorsToFollow = [yellowBalloon, redBalloon, orangeBalloon, blueBalloon, pinkBalloon]
+FIFO = 'mypipe'
+os.mkfifo(FIFO, 0o777)
 
 nFrames = 0
 camera=cv2.VideoCapture('http://192.168.1.1:8080/?action=stream')
@@ -104,6 +96,7 @@ problem = 'trajectory'
 
 print(int(halfFrameWidth)) # For protocol purpose
 stdout.flush()
+colorIdx = 0
 
 while True:
     # grab the current frame
@@ -111,14 +104,22 @@ while True:
     #nFrames = (nFrames+1) % 1
     #if (nFrames!=0):
     #    continue
-
     if not grabbed:
         break
 
     #hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+    try:
+        p = os.open(FIFO, os.O_RDONLY | os.O_NONBLOCK)
+        input = os.read(p, 2)
+    except:
+        pass
 
-    getBallDirection(lab, yellowHouse)
+    if input:
+        colorIdx+=1
+
+    getBallDirection(lab, colorsToFollow[colorIdx])
+    os.close(p)
     # show the frame to our screen
     cv2.imshow("Frame", frame)
     key = cv2.waitKey(1) & 0xFF
@@ -128,6 +129,7 @@ while True:
         print(-halfFrameWidth, 0)
         stdout.flush()
         break
+os.unlink(p)
 # cleanup the camera and close any open windows
 camera.release()
 cv2.destroyAllWindows()

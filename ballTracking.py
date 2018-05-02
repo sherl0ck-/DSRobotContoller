@@ -9,7 +9,7 @@ problems = ['atob', 'leader', 'trajectory']
 def isStopConditionMet(relevantParam, problem):
     if problem in problems:
         if problem == 'atob' or problem=='trajectory':
-            return relevantParam > 450
+            return relevantParam > 400
         elif problem == 'leader':
             return relevantParam > IN_FRONT_OF_US
 
@@ -107,9 +107,9 @@ stdout.flush()
 while True:
     # grab the current frame
     (grabbed, frame) = camera.read()
-    nFrames = (nFrames+1) % 2
-    if (nFrames!=0):
-        continue
+    #nFrames = (nFrames+1) % 1
+    #if (nFrames!=0):
+    #    continue
 
     if not grabbed:
         break

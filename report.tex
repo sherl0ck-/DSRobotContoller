@@ -1,0 +1,48 @@
+\documentclass[12pt, twoside, a4paper, titlepage]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+% set the default code style
+\lstset{
+    frame=tb, % draw a frame at the top and bottom of the code block
+    tabsize=4, % tab space width
+    showstringspaces=false, % don't mark spaces in strings
+    basicstyle=\ttfamily\scriptsize,    
+    numbers=left, % display line numbers on the left
+    commentstyle=\color{green}, % comment color
+    keywordstyle=\color{blue}, % keyword color
+    stringstyle=\color{red}, % string color
+    identifierstyle=\color{red}
+}
+
+\begin{document}
+
+\title{Embedded Systems \linebreak Final project report -- DB40, a.k.a. Freddie }
+\author{Prasant Adhikari (pa1038), Jovan Jovancevic (jj1652)}
+\maketitle
+
+\section{Summary}
+Over the past 7 weeks, we worked with an Arduino DSRobot -- a rudimentary 4-wheeled robotic car with a simple on-board webcam, produced by Kuman. The robot is capable of accepting controls over WiFi: go forward, stop turn, pan/tilt the camera and set motor speed. Further, the robot can provide the live feed from the camera, also through WiFi. In this report, we provide a detailed description of the solution we designed and implemented to address the 3 challenges we were given: 1) Go-to goal, 2) Leader-follower and 3) Trajectory tracking. Our system works on an out-of-the-box robot and does not require an external localizer. The controls code is written in C++ and image processing is done in Python, relying on OpenCV 3. It is robust to different lighting scene conditions and can be calibrated for any color tracking. On the downside, a scene that contains the color the robot is tracking can confuse the robot. Another system flaw is that the camera has to be manually adjusted for different tasks.
+
+\section{Solution overview}
+As can be seen in Fig. \ref{block}, the system has two main modules: image processing and controls. The calibration module enables an easy color range determination for an encoding in a particular color space (RGB, HSV and LAB). The on-board camera feeds 15 FPS into the system. In one second, we determined that we our image processing can keep up with the feed. However, piping, executing controls code and communicating back to the robot result in an actual processing rate of 12 FPS. This is why, in the image processing code, we purposefully drop every 5th frame. 
+
+
+% \begin{figure}[h]
+% \caption{System block diagram}\label{fig:block}
+% \begin{center}
+% \includegraphics[width=0.9\columnwidth]{figures/block_diagram.png}
+% \end{center}
+% \end{figure}
+
+
+\section{Image processing}
+
+\section{Controls}
+
+\section{Results}
+
+\end{document}

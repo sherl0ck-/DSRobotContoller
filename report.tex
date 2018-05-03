@@ -20,11 +20,16 @@
 
 \begin{document}
 
-\title{Embedded Systems \linebreak Final project report }
-\author{Prasant Adhikari, Jovan Jovancevic}
+\title{Embedded Systems \linebreak Final project report -- DB40, a.k.a. Freddie }
+\author{Prasant Adhikari (pa1038), Jovan Jovancevic (jj1652)}
 \maketitle
 
-\section{Overview}
+\section{Summary}
+Over the past 7 weeks, we worked with an Arduino DSRobot -- a rudimentary 4-wheeled robotic car with a simple on-board webcam, produced by Kuman. The robot is capable of accepting controls over WiFi: go forward, stop turn, pan/tilt the camera and set motor speed. Further, the robot can provide the live feed from the camera, also through WiFi. In this report, we provide a detailed description of the solution we designed and implemented to address the 3 challenges we were given: 1) Go-to goal, 2) Leader-follower and 3) Trajectory tracking. Our system works on an out-of-the-box robot and does not require an external localizer. The controls code is written in C++ and image processing is done in Python, relying on OpenCV 3. It is robust to different lighting scene conditions and can be calibrated for any color tracking. On the downside, a scene that contains the color the robot is tracking can confuse the robot. Another system flaw is that the camera has to be manually adjusted for different tasks.
+
+\section{Solution overview}
+
+
 
 \section{Image processing}
 

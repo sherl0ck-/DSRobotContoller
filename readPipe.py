@@ -16,7 +16,7 @@ def readPipe():
 			break
 
 		os.close(p)
-		print('Solving poverty...')
+		print('...')
 
 readPipe()
 os.unlink(FIFO)

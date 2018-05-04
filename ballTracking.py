@@ -1,9 +1,7 @@
-from collections import deque   
-import numpy as np
 import argparse
 import imutils
 import cv2
-from sys import stdout, stderr
+from sys import stdout
 import os
 
 problems = ['atob', 'leader', 'trajectory']
@@ -13,6 +11,19 @@ def isStopConditionMet(relevantParam, problem):
 			return relevantParam > 380
 		elif problem == 'leader':
 			return relevantParam > IN_FRONT_OF_US
+
+def getArgs():
+	ap = argparse.ArgumentParser()
+	ap.add_argument('-p', '--problem', required=True,
+					help='Problem - atob, trajectory, or leader')
+	
+	args = vars(ap.parse_args())
+
+	if not args['problem'].lower() in ['atob', 'leader', 'trajectory']:
+		ap.error("Please specify a correct problem.")
+
+	return args
+
 
 def getBallDirection(lab, colorRange):
 	colorLower, colorUpper = colorRange
@@ -49,36 +60,17 @@ def getBallDirection(lab, colorRange):
 			elif problem == 'atob' or problem=='trajectory':
 				relevantParam = int(y)
 
-			else:
-				relevantParam = None
-
 			radius = int(radius)
-			print(-halfFrameWidth, radius) if isStopConditionMet(relevantParam, problem) \
-				else print(int(x)-halfFrameWidth, radius)
+			if isStopConditionMet(relevantParam, problem):
+				return -halfFrameWidth, radius
 
-			stdout.flush()
+			return int(x)-halfFrameWidth, radius
 
-		else:
-			print(halfFrameWidth, 0)
-			stdout.flush()
+		return halfFrameWidth, 0
+			
+	return halfFrameWidth, 0
 
-	else:
-		print(halfFrameWidth, 0)
-		stdout.flush()
-
-redLower = (0, 96, 31)
-redUpper = (6, 255, 255)
-
-blueLower = (90, 90, 0)
-blueUpper = (143, 183, 255)
-
-yellowLower = (25, 73, 104)
-yellowUpper = (62, 255, 255)
-
-yellowHouseLowerLab = (0, 98, 149)
-yellowHouseUpperLab = (255, 126, 178)
-yellowHouse = [yellowHouseLowerLab, yellowHouseUpperLab]
-
+yellowHouse = [(0, 98, 149), (255, 126, 178)]
 yellowTennis = [(0, 107, 150), (255, 126, 170)]
 
 yellowBalloon = [(0, 104, 156), (255, 117, 185)]
@@ -87,7 +79,6 @@ orangeBalloon = [(0, 147, 145), (255, 171, 184)]
 blueBalloon = [(0, 91, 68), (255, 170, 118)]
 pinkBalloon = [(0, 165, 126), (255, 184, 146)]
 
-colorsToFollow = [yellowBalloon, redBalloon, blueBalloon]#, blueBalloon, pinkBalloon]
 FIFO = 'mypipe'
 os.mkfifo(FIFO, 0o777)
 
@@ -95,10 +86,14 @@ nFrames = 0
 camera=cv2.VideoCapture('http://192.168.1.1:8080/?action=stream')
 (grabbed, frame) = camera.read()
 halfFrameWidth = int(frame.shape[1]/2)
-halfFrameHeight = int(frame.shape[0]/2)
 MIN_BALL_RADIUS = 10
-IN_FRONT_OF_US=0.75*halfFrameHeight
-problem = 'trajectory'
+IN_FRONT_OF_US=int(3*frame.shape[0]/8) # 3/4 of half the height.
+problem = getArgs()['problem'].lower()
+
+if problem == 'trajectory':
+	colorsToFollow = [blueBalloon, redBalloon, orangeBalloon, yellowBalloon, pinkBalloon]
+else:
+	colorsToFollow = [yellowHouse]
 
 print(int(halfFrameWidth)) # For protocol purpose
 stdout.flush()
@@ -109,11 +104,9 @@ while True:
 	nFrames+=1
 	if nFrames%5==0:
 	    continue
-
 	if not grabbed:
 		break
 
-	#hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 	lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
 	try:
 		p = os.open(FIFO, os.O_RDONLY | os.O_NONBLOCK)
@@ -121,12 +114,16 @@ while True:
 	except:
 		pass
 
+	# Time to switch to tracking the next ball
 	if input:
 		colorIdx+=1
 
-	getBallDirection(lab, colorsToFollow[colorIdx])
+	direction, radius = getBallDirection(lab, colorsToFollow[colorIdx])
+	print(direction, radius)
+	stdout.flush()
+
 	os.close(p)
-	# show the frame to our screen
+
 	cv2.imshow("Frame", frame)
 	key = cv2.waitKey(1) & 0xFF
 
@@ -137,6 +134,5 @@ while True:
 		break
 
 os.unlink(FIFO)
-# cleanup the camera and close any open windows
 camera.release()
 cv2.destroyAllWindows()

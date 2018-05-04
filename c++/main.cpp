@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <cmath>
+#include <fcntl.h>
 
 // first and last byte of payload
 #define START_COND '\xFF'
@@ -26,8 +28,16 @@
 #define CAM_TILT   6
 #define SPD_LEFT   7
 #define SPD_RIGHT  8
+
 #define SET_DEGREE 3
 #define PAY_LOAD_N 5
+
+#define FULL_SPEED 100
+#define SEARCH_SPEED 0
+#define CRUISE_SPEED 40
+#define INC_SPEED 10
+
+#define CONCESSION 0.3
 
 class Car {
     private:
@@ -63,7 +73,7 @@ class Car {
         // connect to the car
         if (connect(socketfd, (struct sockaddr *) &address, sizeof(address)) < 0)
             exit(-1);
-        setSpeed(10);
+        setSpeed(SEARCH_SPEED);
     }
 
     ~Car() { 
@@ -71,10 +81,7 @@ class Car {
     }
 
     void move(char dir) {
-        int time = 150000;
         send(socketfd, command[dir], PAY_LOAD_N, MSG_NOSIGNAL); 
-        usleep(time);
-        stop();
     }
 
     void stop() {
@@ -99,16 +106,56 @@ class Car {
 
 int main(int argc, char **argv) {
     Car Freddie = Car(argv);
+    char FIFO[] = "../mypipe";
     fprintf(stderr, "Connected to Freddie.\nReady to receive command.....\n");
-    int degree;
-    while(std::cin >> degree) {
-        std::cout << degree << std::endl;
-        if (degree > 50) {
-            Freddie.move(MOV_RIGHT);
-        } else if (degree < -50) {
-            Freddie.move(MOV_LEFT);
+    int halfFrameWidth; std::cin >> halfFrameWidth;
+    fprintf(stderr, "halfFrameWidth: %i\n", halfFrameWidth);
+    int concession = CONCESSION * halfFrameWidth;
+    std::cout << concession << " " << halfFrameWidth + concession << " " << halfFrameWidth -concession<< std::endl;
+    int lastDegree = halfFrameWidth, degree = halfFrameWidth, radius = halfFrameWidth;
+    bool moving_fwd = false, moving_left = false, moving_right = false;
+    bool seen = false;
+    while(std::cin >> degree >> radius) {
+        fprintf(stderr, "received degree: %i %i\n", degree, radius);
+        if (degree == halfFrameWidth) {   // can't find anything in the frame
+            Freddie.setSpeed(SEARCH_SPEED);
+            moving_left ? Freddie.move(MOV_LEFT) : Freddie.move(MOV_RIGHT);
+        } else if (degree == -1 * halfFrameWidth) {
+            if (seen == true) {
+                seen = false;
+                int fd = open(FIFO, O_WRONLY);
+                write(fd, "1", 1);
+                close(fd);
+            }
+            Freddie.stop();
+            moving_fwd = moving_left = moving_right = false;
+        } else if ((degree < 0 && degree + concession > 0) || 
+                (degree > 0 && degree - concession < 0)) {
+            seen = true;
+            (radius > 100) ? Freddie.setSpeed(10) : Freddie.setSpeed(CRUISE_SPEED);
+            if (radius > 250) { Freddie.stop(); continue; };
+            moving_fwd = true;
+            if (degree < 0) moving_left = true, moving_right = false;
+            else moving_right = true, moving_left = false;
+            Freddie.move(MOV_FWD); 
+        } else {
+            seen = true;
+            int cs, inc;
+            cs = (radius < 100) ? CRUISE_SPEED : 10;
+            inc = (abs(degree) * (FULL_SPEED-cs)) / halfFrameWidth; 
+            if (degree < 0) {
+                Freddie.setRightSpeed(cs + inc);
+                Freddie.setLeftSpeed(cs);
+                Freddie.move(MOV_FWD);
+                moving_left = true, moving_fwd = moving_right = false;
+            } else {
+                Freddie.setRightSpeed(cs);
+                Freddie.setLeftSpeed(cs + inc);
+                Freddie.move(MOV_FWD);
+                moving_right = true, moving_fwd = moving_left = false;
+            }
         }
-        Freddie.move(MOV_FWD);
     }
+    Freddie.stop();
     return 0;
 }

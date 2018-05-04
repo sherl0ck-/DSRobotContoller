@@ -48,15 +48,11 @@ def getHouseBall(img, circles):
 			showCircles(img, circle)
 		
 		
-
-	#cv2.imshow('lab', labImg)
-	#cv2.imshow('mask', mask)
-	#cv2.imshow('res', res)
-
-def showCircles(img, circle):
-	circle = np.uint16(np.around(circle))
-	#for circle in circles:
-	for i in range(1):
+		print(countRedPixels)	
+			
+def showCircles(img, circles):
+	circles = np.uint16(np.around(circles))
+	for circle in circles:
 		center = (circle[0], circle[1])
 		# circle center
 		cv2.circle(img, center, 1, (0, 100, 100), 3)
@@ -66,17 +62,15 @@ def showCircles(img, circle):
 
 
 def main():
-	#cap=cv2.VideoCapture('http://192.168.1.1:8080/?action=stream')
-	cap = cv2.VideoCapture(1)
+	cap=cv2.VideoCapture('http://192.168.1.1:8080/?action=stream')
 	ret,frame=cap.read()
 	frameCount=0
 	while True:
 		ret,frame=cap.read()
 		frameCount+=1
-		# Reducing FPS by 5 for better processing
-		#if (frameCount%5 != 0):
-		#	continue
-			
+		
+		if (frameCount%3 == 0):
+			continue
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
 		circles = detectCircles(gray)

@@ -8,7 +8,7 @@ def readPipe():
 	while True:
 		try:
 			p = os.open(FIFO, os.O_RDONLY | os.O_NONBLOCK)
-			input = os.read(p, 1)
+			input = os.read(p, 2)
 		except:
 			continue
 
@@ -17,6 +17,7 @@ def readPipe():
 
 		os.close(p)
 		print('...')
+
 
 readPipe()
 os.unlink(FIFO)

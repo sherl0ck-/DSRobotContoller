@@ -70,7 +70,7 @@ def getBallDirection(lab, colorRange):
 			
 	return halfFrameWidth, 0
 
-yellowHouse = [(0, 98, 149), (255, 126, 178)]
+
 yellowTennis = [(0, 107, 150), (255, 126, 170)]
 
 yellowBalloon = [(0, 104, 156), (255, 117, 185)]

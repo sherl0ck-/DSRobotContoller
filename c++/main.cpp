@@ -52,7 +52,7 @@ class Car {
             {'\xFF', '\x00', '\x04', '\x00', '\xFF'}, // right
             /* 5-6 for camera command */
             {'\xFF', '\x01', '\x07', '\x00', '\xFF'}, // left-right
-            {'\xFF', '\x01', '\x07', '\x00', '\xFF'}, // up-down
+            {'\xFF', '\x01', '\x08', '\x00', '\xFF'}, // up-down
             /* 7-8 are for speed control */
             {'\xFF', '\x02', '\x01', '\x00', '\xFF'}, // left wheels
             {'\xFF', '\x02', '\x02', '\x00', '\xFF'}  // right wheels
@@ -74,6 +74,8 @@ class Car {
         if (connect(socketfd, (struct sockaddr *) &address, sizeof(address)) < 0)
             exit(-1);
         setSpeed(SEARCH_SPEED);
+        setTilt(0);
+        setPan(50);
     }
 
     ~Car() { 
@@ -101,6 +103,16 @@ class Car {
     void setLeftSpeed(char x) {
         command[SPD_LEFT][SET_DEGREE] = x;
         send(socketfd, command[SPD_LEFT], PAY_LOAD_N, MSG_NOSIGNAL);
+    }
+
+    void setTilt(char x) {
+        command[CAM_TILT][SET_DEGREE] = x;
+        send(socketfd, command[CAM_TILT], PAY_LOAD_N, MSG_NOSIGNAL);
+    }
+
+    void setPan(char x){
+        command[CAM_PAN][SET_DEGREE] = x;
+        send(socketfd, command[CAM_PAN], PAY_LOAD_N, MSG_NOSIGNAL);
     }
 };
 

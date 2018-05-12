@@ -33,11 +33,11 @@
 #define PAY_LOAD_N 5
 
 #define FULL_SPEED 100
-#define SEARCH_SPEED 0
-#define CRUISE_SPEED 40
+#define SEARCH_SPEED 10
+#define CRUISE_SPEED 0
 #define INC_SPEED 10
 
-#define CONCESSION 0.3
+#define CONCESSION 0.6
 
 class Car {
     private:
@@ -105,54 +105,56 @@ class Car {
 };
 
 int main(int argc, char **argv) {
+    // setup
     Car Freddie = Car(argv);
-    char FIFO[] = "../mypipe";
-    fprintf(stderr, "Connected to Freddie.\nReady to receive command.....\n");
+    char FIFO[] = "./mypipe";
+    int fd = open(FIFO, O_WRONLY);
+    bool following_trajectory = true;
+ 
+    // variables initialization
     int halfFrameWidth; std::cin >> halfFrameWidth;
-    fprintf(stderr, "halfFrameWidth: %i\n", halfFrameWidth);
     int concession = CONCESSION * halfFrameWidth;
-    std::cout << concession << " " << halfFrameWidth + concession << " " << halfFrameWidth -concession<< std::endl;
-    int lastDegree = halfFrameWidth, degree = halfFrameWidth, radius = halfFrameWidth;
-    bool moving_fwd = false, moving_left = false, moving_right = false;
-    bool seen = false;
+    int degree = halfFrameWidth, radius = halfFrameWidth;
+
+    // flags to keep track of motion
+    bool moving_left = false, moving_right = false;
+    bool seen = false;  // track if the ball was seen recently
+    int counter = 0;    // ball count for trajectory following
+
+    // main loop
     while(std::cin >> degree >> radius) {
-        fprintf(stderr, "received degree: %i %i\n", degree, radius);
-        if (degree == halfFrameWidth) {   // can't find anything in the frame
+        if (degree == halfFrameWidth) { // can't find anything in the frame
+            if (seen == true) write(fd, "1", ++counter);
+            seen = false; 
             Freddie.setSpeed(SEARCH_SPEED);
-            moving_left ? Freddie.move(MOV_LEFT) : Freddie.move(MOV_RIGHT);
-        } else if (degree == -1 * halfFrameWidth) {
-            if (seen == true) {
-                seen = false;
-                int fd = open(FIFO, O_WRONLY);
-                write(fd, "1", 1);
-                close(fd);
-            }
-            Freddie.stop();
-            moving_fwd = moving_left = moving_right = false;
-        } else if ((degree < 0 && degree + concession > 0) || 
-                (degree > 0 && degree - concession < 0)) {
-            seen = true;
-            (radius > 100) ? Freddie.setSpeed(10) : Freddie.setSpeed(CRUISE_SPEED);
-            if (radius > 250) { Freddie.stop(); continue; };
-            moving_fwd = true;
-            if (degree < 0) moving_left = true, moving_right = false;
-            else moving_right = true, moving_left = false;
-            Freddie.move(MOV_FWD); 
-        } else {
-            seen = true;
-            int cs, inc;
-            cs = (radius < 100) ? CRUISE_SPEED : 10;
-            inc = (abs(degree) * (FULL_SPEED-cs)) / halfFrameWidth; 
-            if (degree < 0) {
-                Freddie.setRightSpeed(cs + inc);
-                Freddie.setLeftSpeed(cs);
-                Freddie.move(MOV_FWD);
-                moving_left = true, moving_fwd = moving_right = false;
+
+            // task-specific turning for search
+            if (following_trajectory) {
+                (counter == 0 || counter == 1 || counter == 4) \
+                    ? Freddie.move(MOV_RIGHT) : Freddie.move(MOV_LEFT);
             } else {
-                Freddie.setRightSpeed(cs);
-                Freddie.setLeftSpeed(cs + inc);
+                moving_left ? Freddie.move(MOV_LEFT) : Freddie.move(MOV_RIGHT);
+            }
+        } else {    // found a ball in the frame
+            seen = true;
+            if (degree == -1 * halfFrameWidth) { // close enough, stop
+                Freddie.stop();
+                moving_left = moving_right = false;
+            } else {    // not close enough, make a decision for motion
+                int cruise_speed = (radius < 100) ? CRUISE_SPEED : SEARCH_SPEED;
+                int inc = (abs(degree) * (FULL_SPEED-cruise_speed)) / halfFrameWidth;
+                if (degree < 0) {   // ball is in the left of the frame
+                    moving_left = true, moving_right = false;
+                    inc = (degree + concession > 0) ? 0 : inc;
+                    Freddie.setRightSpeed(cruise_speed + inc);
+                    Freddie.setLeftSpeed(cruise_speed);
+                } else {              // ball is in the right of the frame
+                    moving_right = true, moving_left = false;
+                    inc = (degree - concession < 0) ? 0 : inc;
+                    Freddie.setRightSpeed(cruise_speed);
+                    Freddie.setLeftSpeed(cruise_speed + inc);
+                }
                 Freddie.move(MOV_FWD);
-                moving_right = true, moving_fwd = moving_left = false;
             }
         }
     }

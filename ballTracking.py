@@ -4,14 +4,11 @@ import cv2
 from sys import stdout
 import os
 
-problems = ['atob', 'leader', 'trajectory']
+problems = ['atob', 'trajectory']
 def isStopConditionMet(relevantParam, problem):
-	if problem in problems:
-		if problem == 'atob' or problem=='trajectory':
-			return relevantParam > 380
-		elif problem == 'leader':
-			return relevantParam > IN_FRONT_OF_US
-
+	if problem == 'atob':
+		return relevantParam > 380
+	
 def getArgs():
 	ap = argparse.ArgumentParser()
 	ap.add_argument('-p', '--problem', required=True,
@@ -72,14 +69,15 @@ def getBallDirection(lab, colorRange):
 
 
 yellowTennis = [(0, 107, 150), (255, 126, 170)]
+yellowHouse = [(0, 98, 149), (255, 126, 178)]
 
-yellowBalloon = [(0, 104, 156), (255, 117, 185)]
+yellowBalloon = [(0, 104, 156), (255, 125, 185)]
 redBalloon = [(0, 160, 137), (255, 186, 174)]
 orangeBalloon = [(0, 147, 145), (255, 171, 184)]
-blueBalloon = [(0, 91, 68), (255, 170, 118)]
+blueBalloon = [(0, 91, 68), (255, 153, 110)]
 pinkBalloon = [(0, 165, 126), (255, 184, 146)]
 
-FIFO = 'mypipe'
+FIFO = '/tmp/freddie'
 os.mkfifo(FIFO, 0o777)
 
 nFrames = 0
@@ -87,7 +85,6 @@ camera=cv2.VideoCapture('http://192.168.1.1:8080/?action=stream')
 (grabbed, frame) = camera.read()
 halfFrameWidth = int(frame.shape[1]/2)
 MIN_BALL_RADIUS = 10
-IN_FRONT_OF_US=int(3*frame.shape[0]/8) # 3/4 of half the height.
 problem = getArgs()['problem'].lower()
 
 if problem == 'trajectory':
@@ -112,13 +109,19 @@ while True:
 		p = os.open(FIFO, os.O_RDONLY | os.O_NONBLOCK)
 		input = os.read(p, 2)
 	except:
-		pass
+		input = None
 
 	# Time to switch to tracking the next ball
 	if input:
 		colorIdx+=1
 
-	direction, radius = getBallDirection(lab, colorsToFollow[colorIdx])
+	if colorIdx >= len(colorsToFollow):
+		print(-halfFrameWidth, 0)
+		stdout.flush() 
+		break
+	else: 
+		direction, radius = getBallDirection(lab, colorsToFollow[colorIdx])
+		
 	print(direction, radius)
 	stdout.flush()
 

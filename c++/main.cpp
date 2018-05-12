@@ -33,7 +33,7 @@
 #define PAY_LOAD_N 5
 
 #define FULL_SPEED 100
-#define SEARCH_SPEED 10
+#define SEARCH_SPEED 0
 #define CRUISE_SPEED 0
 #define INC_SPEED 10
 
@@ -107,9 +107,8 @@ class Car {
 int main(int argc, char **argv) {
     // setup
     Car Freddie = Car(argv);
-    char FIFO[] = "./mypipe";
-    int fd = open(FIFO, O_WRONLY);
-    bool following_trajectory = true;
+    char FIFO[] = "/tmp/freddie";
+    bool following_trajectory = (argc==4);
  
     // variables initialization
     int halfFrameWidth; std::cin >> halfFrameWidth;
@@ -124,7 +123,11 @@ int main(int argc, char **argv) {
     // main loop
     while(std::cin >> degree >> radius) {
         if (degree == halfFrameWidth) { // can't find anything in the frame
-            if (seen == true) write(fd, "1", ++counter);
+            if (following_trajectory && seen == true) { 
+                int fd = open(FIFO, O_WRONLY);
+                write(fd, "1", 1); 
+                ++counter;
+            }
             seen = false; 
             Freddie.setSpeed(SEARCH_SPEED);
 
